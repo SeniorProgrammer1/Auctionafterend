@@ -1,0 +1,6 @@
+# Project exclude paths
+/Common/target/
+/Dao/target/
+/Model/target/
+/Service/target/
+/Web/target/

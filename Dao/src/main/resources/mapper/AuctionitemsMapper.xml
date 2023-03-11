@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.accp.Auctionafterend.boot.mapper.AuctionitemsMapper">
+    <resultMap id="AuctionitemsResultMap" type="com.accp.Auctionafterend.boot.pojo.Auctionitems">
+        <id property="aiId" column="aiId" />
+        <result property="aiUsId" column="aiUsId" />
+        <result property="aiUsAccount" column="aiUsAccount"/>
+        <result property="aiName" column="aiName"/>
+        <result property="aiDescribe" column="aiDescribe"/>
+        <result property="aiStartDate" column="aiStartDate"/>
+        <result property="aiFinishDate" column="aiFinishDate"/>
+        <result property="aiPrice" column="aiPrice"/>
+        <result property="aiLowPrice" column="aiLowPrice"/>
+        <result property="aiItemPhoto" column="aiItemPhoto"/>
+        <collection property="bidrecord" fetchType="eager"
+                    select="com.accp.Auctionafterend.boot.mapper.BidrecordMapper.selectByBrAiIdOrderByBrPartakeDate"
+                    column="aiId"></collection>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        aiId,aiUsId,aiUsAccount,aiName,aiDescribe,aiStartDate,aiFinishDate,
+        aiPrice,aiLowPrice,aiItemPhoto
+    </sql>
+
+    <select id="selectByAiId" resultMap="AuctionitemsResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from auctionitems
+        where
+        aiId = #{aiId,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectByIdAuctionitemsVo" resultType="auctionitemsVo">
+        SELECT aiId,aiName,aiDescribe,aiStartDate,aiFinishDate,aiPrice,MAX(brPrice) AS brPrice  FROM Auctionitems AS a
+        JOIN Bidrecord AS b ON a.aiId=b.brAiId
+        <where>
+            <if test="1==1">
+                aiUsId=#{id}
+            </if>
+            <if test="isEmp == 'begin'">
+               and aiStartDate &lt;= #{date} and aiFinishDate &gt;= #{date}
+            </if>
+            <if test="isEmp == 'finish'">
+               and aiFinishDate &lt; #{date}
+            </if>
+        </where>
+        GROUP BY aiId
+    </select>
+
+    <delete id="deleteByAiId">
+        delete
+        from auctionitems
+        where aiId = #{aiId,jdbcType=VARCHAR}
+    </delete>
+
+    <update id="updateAiId" parameterType="auctionitems">
+        update auctionitems
+        set
+            aiUsId=#{aiUsId},aiUsAccount=#{aiUsAccount},aiName=#{aiName},aiDescribe=#{aiDescribe},aiStartDate=#{aiStartDate},
+            aiFinishDate=#{aiFinishDate},aiPrice=#{aiPrice},aiLowPrice=#{aiLowPrice},
+            <if test="aiItemPhoto != '' and aiItemPhoto != null">
+            aiItemPhoto=#{aiItemPhoto}
+            </if>
+            where aiId = #{aiId}
+    </update>
+</mapper>
